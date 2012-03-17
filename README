@@ -1,0 +1,3 @@
+KhanReporter
+
+Queries the Khan Academy API for data about student exercise proficiency. Pushes that data to GDocs spreadsheet(s) using the Google Apps API.
