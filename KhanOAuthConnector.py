@@ -7,7 +7,10 @@ import SimpleHTTPServer
 from test_oauth_client import TestOAuthClient
 from oauth import OAuthToken
 import time
+import json
 import os.path
+import sys
+import LoadStudents
 
 REQUEST_TOKEN = None
 
@@ -67,14 +70,12 @@ class KhanOAuth():
             self.CONSUMER_SECRET)
         self.ACCESS_TOKEN = client.fetch_access_token(REQUEST_TOKEN)
 
-    def get_api_resource(self, studentId, exerciseName):
+    def get_api_resource(self, resourceUrl):
 
+        # Example URLs
         #/api/v1/user/exercises/exponents_1?email=Khan.User@gmail.com
         #/api/v1/user?email=Khan.User@gmail.com
-        resourceUrl = "/api/v1/user"
-        if (exerciseName != ""):
-            resourceUrl += "/exercises/" + exerciseName
-        resourceUrl += "?email=" + studentId
+        #/api/v1/exercises
 
         client = TestOAuthClient(self.SERVER_URL, self.CONSUMER_KEY, \
             self.CONSUMER_SECRET)
@@ -82,9 +83,8 @@ class KhanOAuth():
         response = client.access_resource(resourceUrl, self.ACCESS_TOKEN)
         end = time.time()
 
-        print "\n"
-        print response
-        print "\nTime: %ss\n" % (end - start)
+        #print "\nTime: %ss\n" % (end - start)
+        return response
 
     def getTokens(self):
 
@@ -102,10 +102,32 @@ if __name__ == "__main__":
 
     KOA = KhanOAuth()
     KOA.initConnection()
+    studentMap = LoadStudents.returnStudentMap();
+    response = []
 
-    try:
-        KOA.get_api_resource("Reed.Larry48@gmail.com", "exponents_1")
-    except EOFError:
-        print
-    except Exception, e:
-        print "Error: %s" % e
+    for studentUUID in studentMap:
+        try:
+            response = KOA.get_api_resource("/api/v1/user?email=" + studentUUID)
+        except EOFError:
+            print
+        except Exception, e:
+            print "Error: %s" % e
+        
+        print("---")
+        if (response.strip() != 'null'):
+            jsonObject = json.loads(response)
+            profList = jsonObject.get("all_proficient_exercises")
+            nickname = jsonObject.get("nickname")
+            print nickname
+            for p in profList:
+                exerciseResponse = KOA.get_api_resource \
+                    ("/api/v1/user/exercises/" + p + "?email=" + studentUUID)
+                if (exerciseResponse.strip() != 'null'):
+                    exerciseJSON = json.loads(exerciseResponse)
+                    proficientDate = exerciseJSON.get("proficient_date")
+                    sys.stdout.write(p + " ")
+                    if (proficientDate): sys.stdout.write(proficientDate)
+                    else: sys.stdout.write("null")
+                    sys.stdout.write('\n')
+            
+    

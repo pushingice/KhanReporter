@@ -8,12 +8,12 @@ def returnStudentMap():
     value: [first, last, full]
     """
     studentMap = {}
-    studentPath = os.path.join("private","student_data.csv")
+    studentPath = os.path.join("private","student_uuids.txt")
     file = open(studentPath).readlines()
 
-    for line in file[1:]:
-        tokens = line.split(',')
-        studentMap[tokens[4].strip()] = tokens[0:4]
+    for line in file:
+        tokens = line.split()
+        studentMap[tokens[-1].strip()] = tokens[0:-1]
 
     return studentMap
 
@@ -22,4 +22,4 @@ if __name__ == "__main__":
 
     stMap = returnStudentMap()
     for key in stMap:
-        print(key + " " + stMap[key][0])
+        print(key + " " + str(len(stMap[key])))

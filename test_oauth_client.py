@@ -67,7 +67,7 @@ def get_response(url):
     file = None
     try:
         file = urllib2.urlopen(url)
-	print(url)
+	#print(url)
         response = file.read()
     finally:
         if file:
